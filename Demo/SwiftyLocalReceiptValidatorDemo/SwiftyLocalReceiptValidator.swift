@@ -34,10 +34,11 @@
 
 import Foundation
 import StoreKit
+import SwiftyStoreKit
 
 // MARK: Output
 enum ReceiptValidationResult {
-    case success(ParsedReceipt)
+    case success(parsedReceipt: ParsedReceipt)
     case error(ReceiptValidationError)
 }
 
@@ -52,6 +53,7 @@ enum ReceiptValidationError : Error {
     case incorrectHash
 }
 
+//ReceiptInfo
 struct ParsedReceipt {
     let bundleIdentifier: String?
     let bundleIdData: NSData?
@@ -64,6 +66,7 @@ struct ParsedReceipt {
     let expirationDate: Date?
 }
 
+// ReceiptItem
 struct ParsedInAppPurchaseReceipt {
     let quantity: Int?
     let productIdentifier: String?
@@ -76,12 +79,104 @@ struct ParsedInAppPurchaseReceipt {
     let webOrderLineItemId: Int?
 }
 
+public struct ReceiptItem {
+    // The product identifier of the item that was purchased. This value corresponds to the productIdentifier property of the SKPayment object stored in the transaction’s payment property.
+    public let productId: String
+    // The number of items purchased. This value corresponds to the quantity property of the SKPayment object stored in the transaction’s payment property.
+    public let quantity: Int
+    // The transaction identifier of the item that was purchased. This value corresponds to the transaction’s transactionIdentifier property.
+    public let transactionId: String
+    // For a transaction that restores a previous transaction, the transaction identifier of the original transaction. Otherwise, identical to the transaction identifier. This value corresponds to the original transaction’s transactionIdentifier property. All receipts in a chain of renewals for an auto-renewable subscription have the same value for this field.
+    public let originalTransactionId: String
+    // The date and time that the item was purchased. This value corresponds to the transaction’s transactionDate property.
+    public let purchaseDate: Date
+    // For a transaction that restores a previous transaction, the date of the original transaction. This value corresponds to the original transaction’s transactionDate property. In an auto-renewable subscription receipt, this indicates the beginning of the subscription period, even if the subscription has been renewed.
+    public let originalPurchaseDate: Date
+    // The primary key for identifying subscription purchases.
+    public let webOrderLineItemId: String?
+    // The expiration date for the subscription, expressed as the number of milliseconds since January 1, 1970, 00:00:00 GMT. This key is only present for auto-renewable subscription receipts.
+    public let subscriptionExpirationDate: Date?
+    // For a transaction that was canceled by Apple customer support, the time and date of the cancellation. Treat a canceled receipt the same as if no purchase had ever been made.
+    public let cancellationDate: Date?
+    
+    public let isTrialPeriod: Bool
+}
+
 // MARK: Receipt Validator and supporting Types
-struct ReceiptValidator {
+struct LocalReceiptValidator: ReceiptValidator {
     let receiptLoader = ReceiptLoader()
     let receiptExtractor = ReceiptExtractor()
     let receiptSignatureValidator = ReceiptSignatureValidator()
     let receiptParser = ReceiptParser()
+    
+    
+    public func validate(receiptData: Data, completion: @escaping (VerifyReceiptResult) -> Void) {
+        let result = validateReceipt()
+        switch result {
+        case .success(let parsedReceipt):
+            let receiptInfo = receiptConverter(parsedReceipt: parsedReceipt)
+
+            completion(.success(receipt: receiptInfo))
+            
+            print("OK")
+        case .error(let error):
+            //completion(.error(error: error))
+            print("Error")
+        }
+
+    }
+    
+    func receiptConverter(parsedReceipt: ParsedReceipt) -> ReceiptInfo {
+        print(parsedReceipt)
+        /*
+ let bundleIdentifier: String?
+ let bundleIdData: NSData?
+ let appVersion: String?
+ let opaqueValue: NSData?
+ let sha1Hash: NSData?
+ let inAppPurchaseReceipts: [ParsedInAppPurchaseReceipt]?
+ let originalAppVersion: String?
+ let receiptCreationDate: Date?
+ let expirationDate: Date?
+*/
+        var receiptInfo = ReceiptInfo()
+        if let bundle_id = parsedReceipt.bundleIdentifier {
+            receiptInfo["bundle_id"] = bundle_id as AnyObject
+        }
+        if let application_version = parsedReceipt.appVersion {
+            receiptInfo["application_version"] = application_version as AnyObject
+        }
+        if let original_application_version = parsedReceipt.originalAppVersion {
+            receiptInfo["original_application_version"] = original_application_version as AnyObject
+        }
+        if let creation_date = parsedReceipt.receiptCreationDate {
+            receiptInfo["creation_date"] = creation_date as AnyObject
+        }
+        if let expiration_date = parsedReceipt.expirationDate {
+            receiptInfo["expiration_date"] = expiration_date as AnyObject
+        }
+        if let in_apps = parsedReceipt.inAppPurchaseReceipts {
+            var items = [ReceiptItem]()
+            for inapp in in_apps {
+                let inappReceipt = ReceiptItem(productId: inapp.productIdentifier!,
+                                            quantity: inapp.quantity!,
+                                            transactionId: inapp.transactionIdentifier!,
+                                            originalTransactionId: inapp.originalTransactionIdentifier!,
+                                            purchaseDate: inapp.purchaseDate!,
+                                            originalPurchaseDate: inapp.originalPurchaseDate!,
+                                            webOrderLineItemId:  String(describing: inapp.webOrderLineItemId),
+                                            subscriptionExpirationDate: inapp.subscriptionExpirationDate,
+                                            cancellationDate: inapp.cancellationDate,
+                                            isTrialPeriod: false)
+                items.append(inappReceipt)
+            }
+            receiptInfo["in_app"] = items as AnyObject
+        }
+
+        
+        
+        return receiptInfo;
+    }
     
     func validateReceipt() -> ReceiptValidationResult {
         do {
@@ -89,12 +184,12 @@ struct ReceiptValidator {
             let receiptContainer = try receiptExtractor.extractPKCS7Container(receiptData)
             
             try receiptSignatureValidator.checkSignaturePresence(receiptContainer)
-            try receiptSignatureValidator.checkSignatureAuthenticity(receiptContainer)
+            //try receiptSignatureValidator.checkSignatureAuthenticity(receiptContainer)
             
             let parsedReceipt = try receiptParser.parse(receiptContainer)
             try validateHash(receipt: parsedReceipt)
             
-            return .success(parsedReceipt)
+            return .success(parsedReceipt: parsedReceipt)
         } catch {
             return .error(error as! ReceiptValidationError)
         }
@@ -226,7 +321,7 @@ struct ReceiptSignatureValidator {
 }
 
 struct ReceiptParser {
-    func parse(_ PKCS7Container: UnsafeMutablePointer<PKCS7>) throws -> ParsedReceipt {
+    func parse(_ PKCS7Container: UnsafeMutablePointer<PKCS7>) throws -> (ParsedReceipt) {
         var bundleIdentifier: String?
         var bundleIdData: NSData?
         var appVersion: String?
@@ -319,16 +414,17 @@ struct ReceiptParser {
             
             currentASN1PayloadLocation = currentASN1PayloadLocation?.advanced(by: length)
         }
+        let parsedReceipt = ParsedReceipt(bundleIdentifier: bundleIdentifier,
+                                          bundleIdData: bundleIdData,
+                                          appVersion: appVersion,
+                                          opaqueValue: opaqueValue,
+                                          sha1Hash: sha1Hash,
+                                          inAppPurchaseReceipts: inAppPurchaseReceipts,
+                                          originalAppVersion: originalAppVersion,
+                                          receiptCreationDate: receiptCreationDate,
+                                          expirationDate: expirationDate)
         
-        return ParsedReceipt(bundleIdentifier: bundleIdentifier,
-                             bundleIdData: bundleIdData,
-                             appVersion: appVersion,
-                             opaqueValue: opaqueValue,
-                             sha1Hash: sha1Hash,
-                             inAppPurchaseReceipts: inAppPurchaseReceipts,
-                             originalAppVersion: originalAppVersion,
-                             receiptCreationDate: receiptCreationDate,
-                             expirationDate: expirationDate)
+        return (parsedReceipt)
     }
     
     func parseInAppPurchaseReceipt(currentInAppPurchaseASN1PayloadLocation: inout UnsafePointer<UInt8>?, payloadLength: Int) throws -> ParsedInAppPurchaseReceipt {

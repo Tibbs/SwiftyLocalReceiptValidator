@@ -6,5 +6,6 @@ target 'SwiftyLocalReceiptValidatorDemo' do
   use_frameworks!
 
   # Pods for SwiftyLocalReceiptValidatorDemo
-    pod 'OpenSSL', '~> 1.0'
+    pod 'OpenSSL-Universal'
+    pod 'SwiftyStoreKit'
 end

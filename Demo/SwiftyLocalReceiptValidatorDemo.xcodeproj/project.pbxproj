@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2E25C96200285B6E66B2BAFD /* Pods_SwiftyLocalReceiptValidatorDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82F291C413721140EC7606CD /* Pods_SwiftyLocalReceiptValidatorDemo.framework */; };
+		6D66B90D20676291007125B4 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D66B90C20676291007125B4 /* StoreKit.framework */; };
 		C3FE5D021FA253300048844D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3FE5D011FA253300048844D /* AppDelegate.swift */; };
 		C3FE5D041FA253300048844D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3FE5D031FA253300048844D /* ViewController.swift */; };
 		C3FE5D071FA253300048844D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C3FE5D051FA253300048844D /* Main.storyboard */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6D66B90C20676291007125B4 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		82F291C413721140EC7606CD /* Pods_SwiftyLocalReceiptValidatorDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SwiftyLocalReceiptValidatorDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3FE5CFE1FA253300048844D /* SwiftyLocalReceiptValidatorDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftyLocalReceiptValidatorDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3FE5D011FA253300048844D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -40,6 +42,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2E25C96200285B6E66B2BAFD /* Pods_SwiftyLocalReceiptValidatorDemo.framework in Frameworks */,
+				6D66B90D20676291007125B4 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,6 +52,7 @@
 		627D203F27800FEEDE8768A6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6D66B90C20676291007125B4 /* StoreKit.framework */,
 				82F291C413721140EC7606CD /* Pods_SwiftyLocalReceiptValidatorDemo.framework */,
 			);
 			name = Frameworks;
@@ -77,11 +81,11 @@
 			children = (
 				C3FE5D011FA253300048844D /* AppDelegate.swift */,
 				C3FE5D031FA253300048844D /* ViewController.swift */,
+				C3FE5D171FA254650048844D /* SwiftyLocalReceiptValidator.swift */,
 				C3FE5D051FA253300048844D /* Main.storyboard */,
 				C3FE5D081FA253300048844D /* Assets.xcassets */,
 				C3FE5D0A1FA253300048844D /* LaunchScreen.storyboard */,
 				C3FE5D0D1FA253300048844D /* Info.plist */,
-				C3FE5D171FA254650048844D /* SwiftyLocalReceiptValidator.swift */,
 				C3FE5D141FA2541C0048844D /* pkcs7_union_accessors.c */,
 				C3FE5D151FA2541C0048844D /* pkcs7_union_accessors.h */,
 				C3FE5D131FA2541C0048844D /* SwiftyLocalReceiptValidatorDemo-Bridging-Header.h */,
@@ -135,6 +139,11 @@
 						CreatedOnToolsVersion = 9.0.1;
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -176,9 +185,12 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-SwiftyLocalReceiptValidatorDemo/Pods-SwiftyLocalReceiptValidatorDemo-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/SwiftyStoreKit/SwiftyStoreKit.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyStoreKit.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -191,13 +203,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-SwiftyLocalReceiptValidatorDemo-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F63A3482C3A3E5F077689D3C /* [CP] Copy Pods Resources */ = {
@@ -365,10 +380,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BG3BN4WFC6;
+				ENABLE_BITCODE = YES;
 				INFOPLIST_FILE = SwiftyLocalReceiptValidatorDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcbancroft.SwiftyLocalReceiptValidatorDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.vinnov.Living-Weather-HD-free";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				STRIP_SWIFT_SYMBOLS = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftyLocalReceiptValidatorDemo/SwiftyLocalReceiptValidatorDemo-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
@@ -383,11 +403,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BG3BN4WFC6;
+				ENABLE_BITCODE = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = SwiftyLocalReceiptValidatorDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcbancroft.SwiftyLocalReceiptValidatorDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.vinnov.Living-Weather-HD-free";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftyLocalReceiptValidatorDemo/SwiftyLocalReceiptValidatorDemo-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
